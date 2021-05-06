@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'utils/random_string.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _room_id = "";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,14 +22,14 @@ class HomePage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(
                 top: 50,
-                left: 25,
-                bottom: 5,
+                left: 0,
+                bottom: 10,
               ),
               child: Text(
                 'Please enter a room name',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -30,11 +38,14 @@ class HomePage extends StatelessWidget {
                 horizontal: 20.0,
               ),
               child: SizedBox(
-                width: 300,
+                width: 250,
                 child: TextField(
+                  controller: TextEditingController(
+                    text: '$_room_id',
+                  ),
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 25,
+                    fontSize: 20,
                   ),
                 ),
               ),
@@ -60,7 +71,11 @@ class HomePage extends StatelessWidget {
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          _room_id = randomNumeric(9);
+                        });
+                      },
                       child: Text('RANDOM'),
                       style: ElevatedButton.styleFrom(
                         primary: Colors.blue,
