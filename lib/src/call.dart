@@ -1,17 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter_apprtc/src/signaling_channel.dart';
 import 'package:http/http.dart' as http;
 
 class Call {
-  SignalingChannel _channel;
+  final _channel = SignalingChannel();
   Map<String, Object> _params;
 
   Call(this._params) {
-    _channel = SignalingChannel(_params["wssUrl"], _params["wssPostUrl"]);
     _requestMediaAndIceServers();
-  }
-
-  start(String roomId) {
-    _connectToRoom(roomId);
   }
 
   _requestMediaAndIceServers() async {
@@ -23,14 +20,24 @@ class Call {
     print('Response body: ${response.body}');
   }
 
-  _connectToRoom(String roomId) {
-    _joinRoom(roomId);
+  start(String roomId) {
+    // _channel.open(_params["wssUrl"]);
+    _connectToRoom(roomId);
   }
 
-  _joinRoom(String roomId) async {
+  _connectToRoom(String roomId) async {
+    var response = await _joinRoom(roomId);
+    if (response.statusCode == 200) {
+      var responseObj = jsonDecode(response.body);
+      if (responseObj["result"] == "SUCCESS") {
+        var clientId = responseObj["params"]["client_id"];
+        _channel.register(roomId, clientId);
+      }
+    }
+  }
+
+  Future<http.Response> _joinRoom(String roomId) {
     var url = Uri.parse('https://appr.tc/join/$roomId');
-    var response = await http.post(url);
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
+    return http.post(url);
   }
 }
