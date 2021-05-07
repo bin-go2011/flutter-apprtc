@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'utils/random_string.dart';
+import 'package:flutter_apprtc/src/app_controller.dart';
+import 'package:flutter_apprtc/src/utils/random_string.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,6 +9,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _room_id = "";
+  AppController _appController = AppController();
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +61,9 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        _appController.createCall(_room_id);
+                      },
                       child: Text('JOIN'),
                       style: ElevatedButton.styleFrom(
                         primary: Colors.blue,
