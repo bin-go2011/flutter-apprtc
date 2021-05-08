@@ -1,37 +1,44 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_apprtc/src/utils/websocket_client.dart';
 import 'dart:convert';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SignalingChannel {
-  final _websocket = WebSocketClient();
+  String _wssUrl;
+  WebSocketChannel _websocket;
+  bool _registered = false;
 
-  SignalingChannel() {
-    _websocket
-      ..onOpen = () {
-        debugPrint("Signaling channel opened.");
-      }
-      ..onClose = (int code, String reason) {
-        debugPrint('Channel closed with code:$code reason:$reason');
-      }
-      ..onMessage = (dynamic msg) {
-        print(msg);
-      };
-  }
+  SignalingChannel(this._wssUrl);
 
-  open(String url) async {
-    await _websocket.connect(url);
+  open() {
+    print('Opening signaling channel.');
+
+    _websocket = IOWebSocketChannel.connect(
+      _wssUrl,
+      headers: {"Origin": "https://appr.tc"},
+    )..stream.listen(
+        (event) {
+          print(event);
+        },
+        onDone: () {
+          print('Channel closed');
+          _websocket.sink.close();
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          print('Signaling channel error: $error');
+        },
+      );
+    print('Signaling channel opened.');
   }
 
   register(String roomId, String clientId) {
+    print('Registering signaling channel.');
     var registerMessage = {
       'cmd': 'register',
       'roomid': roomId,
       'clientid': clientId
     };
-    _websocket.send(jsonEncode(registerMessage));
-  }
-
-  close() {
-    _websocket.close();
+    _websocket.sink.add(jsonEncode(registerMessage));
+    _registered = true;
+    print('Signaling channel registered.');
   }
 }

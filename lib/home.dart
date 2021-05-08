@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_apprtc/src/app_controller.dart';
-import 'package:flutter_apprtc/src/utils/random_string.dart';
+import 'package:flutter_apprtc/src/random_string.dart';
 
 class HomePage extends StatefulWidget {
   @override
