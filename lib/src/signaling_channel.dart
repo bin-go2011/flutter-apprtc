@@ -4,13 +4,14 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SignalingChannel {
   String _wssUrl;
+  String _wssPostUrl;
   WebSocketChannel _websocket;
   bool _registered = false;
 
-  SignalingChannel(this._wssUrl);
-
-  open() {
+  connect(String wssUrl, String wssPostUrl) {
     print('Opening signaling channel.');
+    _wssUrl = wssUrl;
+    _wssPostUrl = wssPostUrl;
 
     _websocket = IOWebSocketChannel.connect(
       _wssUrl,

@@ -7,17 +7,11 @@ import 'package:http/http.dart' as http;
 const APPRTC_URL_BASE = 'https://appr.tc';
 
 class Call {
-  SignalingChannel _channel;
+  final _wsClient = SignalingChannel();
   PeerConnectionClient _pcClient;
   Map<String, Object> _params;
 
-  String _roomId;
-  String _clientId;
-  String _room_link;
-
-  Call(this._params) {
-    _channel = SignalingChannel(_params["wssUrl"]);
-  }
+  Call(this._params);
 
   _requestMediaAndIceServers() {
     _maybeGetMedia();
@@ -43,26 +37,25 @@ class Call {
   }
 
   start(String roomId) async {
-    _roomId = roomId;
-
     _requestMediaAndIceServers();
 
-    await _connectToRoom();
+    await _connectToRoom(roomId);
 
     _startSignaling();
   }
 
-  _connectToRoom() async {
-    _channel.open();
-
-    var response = await _joinRoom(_roomId);
-
+  _connectToRoom(String roomId) async {
+    var response = await _joinRoom(roomId);
     if (response.statusCode == 200) {
       var responseObj = jsonDecode(response.body);
       if (responseObj["result"] == "SUCCESS") {
-        _clientId = responseObj["params"]["client_id"];
-        _room_link = responseObj["params"]["room_link"];
-        _channel.register(_roomId, _clientId);
+        _params["clientId"] = responseObj["params"]["client_id"];
+        _params["roomId"] = responseObj["params"]["room_id"];
+        _params["roomLink"] = responseObj["params"]["room_link"];
+        _params["isInitiator"] = responseObj["params"]["room_link"];
+
+        _wsClient.connect(_params["wssUrl"], _params["wssPostUrl"]);
+        _wsClient.register(_params["roomId"], _params["clientId"]);
       }
     }
     print('Joined the room.');
@@ -75,17 +68,19 @@ class Call {
 
   _startSignaling() {
     print('Starting signaling.');
-    _createPcClient();
+    _createPeerConnection();
   }
 
   _sendSignalingMessage(dynamic message) {
     var msgString = jsonEncode(message);
-    var url = Uri.parse('$APPRTC_URL_BASE/message/$_roomId/$_clientId');
+    var url = Uri.parse(
+        '$APPRTC_URL_BASE/message/$_params["roomId"]/$_params["clientId"]');
     http.post(url, body: msgString);
     print('C->GAE: $msgString');
   }
 
-  _createPcClient() {
+  _createPeerConnection() {
     _pcClient = PeerConnectionClient(_params);
+    print("Created PeerConnectionClient");
   }
 }
